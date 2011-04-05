@@ -45,14 +45,15 @@ public class PlayerManagement implements CommandExecutor
 	
 	private void LoadXmlDocument()
 	{
-		if(new File("players.xml").exists())
+		String path = plugin.getDataFolder().getParent() + "\\players.xml";
+		if(new File(path).exists())
 		{
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db;
 			try 
 			{
 				db = dbf.newDocumentBuilder();
-				doc = db.parse("players.xml");
+				doc = db.parse(path);
 				root = doc.getDocumentElement();
 				NodeList playerNodes = root.getElementsByTagName("player");
 				
@@ -77,8 +78,6 @@ public class PlayerManagement implements CommandExecutor
 			{
 				e.printStackTrace();
 			}
-
-
 		}
 		else 
 		{
@@ -230,12 +229,13 @@ public class PlayerManagement implements CommandExecutor
 	
 	private void SaveXml()
 	{
+		String path = plugin.getDataFolder().getParent() + "\\players.xml";
 		 try {
 		        // Prepare the DOM document for writing
 		        Source source = new DOMSource(doc);
 
 		        // Prepare the output file
-		        File file = new File("players.xml");
+		        File file = new File(path);
 		        Result result = new StreamResult(file);
 
 		        // Write the DOM document to the file
@@ -290,6 +290,11 @@ public class PlayerManagement implements CommandExecutor
 			else if(arg3[0].equals("setpassword"))
 			{
 				
+			}
+			else if(arg3[0].equals("reload"))
+			{
+				sender.sendMessage(ChatColor.GREEN + "Reloading user list...");
+				LoadXmlDocument();
 			}
 		}
 		else
