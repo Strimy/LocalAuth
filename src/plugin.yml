@@ -1,0 +1,8 @@
+name: LocalAuth
+main: strimy.bukkit.plugins.localauth.LocalAuth
+version: 0.1b
+
+commands:
+    user: 
+        description: Allow the configuration of users
+        usage: /user add|delete|list
