@@ -45,7 +45,8 @@ public class PlayerManagement implements CommandExecutor
 	
 	private void LoadXmlDocument()
 	{
-		String path = plugin.getDataFolder().getParent() + "\\players.xml";
+		String path = plugin.getDataFolder().getParent() + "/players.xml";
+		plugin.Print("Path : " + path);
 		if(new File(path).exists())
 		{
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
