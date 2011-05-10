@@ -97,13 +97,12 @@ public class PlayerManagement implements CommandExecutor
 			DOMImplementation impl = builder.getDOMImplementation();
 			
 			Document doc = impl.createDocument(null, null, null);
-			doc.createElement("players");
+			doc.appendChild(doc.createElement("players"));
 			SaveXml();
 			
 		} 
 		catch (ParserConfigurationException e) 
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
@@ -200,7 +199,7 @@ public class PlayerManagement implements CommandExecutor
 			createUser(sender, username, newPassword);
 			if(sender instanceof Player)
 			{
-				sender.sendMessage("Password changed for user" + ((Player)sender).getDisplayName());
+				sender.sendMessage("Password changed for user " + ((Player)sender).getDisplayName());
 			}
 		}
 	}
@@ -230,7 +229,7 @@ public class PlayerManagement implements CommandExecutor
 	
 	private void SaveXml()
 	{
-		String path = plugin.getDataFolder().getParent() + "\\players.xml";
+		String path = plugin.getDataFolder().getParent() + "/players.xml";
 		 try {
 		        // Prepare the DOM document for writing
 		        Source source = new DOMSource(doc);

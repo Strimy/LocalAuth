@@ -7,7 +7,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -63,16 +65,30 @@ public class LAPlayerListener extends PlayerListener
 					lastNotif.remove(player.getDisplayName());
 					lastNotif.put(player.getDisplayName(), new Date());
 					player.teleport(startPosition.get(player));
+					return;
 				}
 			}
 			else
 			{
 				lastNotif.put(player.getDisplayName(), new Date());
 				player.teleport(startPosition.get(player));
+				return;
 			}
-				
+			event.setCancelled(true);	
 		}
 		super.onPlayerMove(event);
+	}
+
+	@Override
+	public void onPlayerDropItem(PlayerDropItemEvent event) {
+		// TODO Auto-generated method stub
+		super.onPlayerDropItem(event);
+	}
+
+	@Override
+	public void onPlayerKick(PlayerKickEvent event) {
+		// TODO Auto-generated method stub
+		super.onPlayerKick(event);
 	}
 
 	@Override
@@ -158,9 +174,11 @@ public class LAPlayerListener extends PlayerListener
 	}
 
 	@Override
-	public void onPlayerQuit(PlayerQuitEvent event) {
+	public void onPlayerQuit(PlayerQuitEvent event) 
+	{
 		if(plugin.unloggedPlayers.contains(event.getPlayer()))
 		{
+			
 			plugin.unloggedPlayers.remove(event.getPlayer());
 		}
 		super.onPlayerQuit(event);
