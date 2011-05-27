@@ -61,20 +61,19 @@ public class LAPlayerListener extends PlayerListener
 				Date date = lastNotif.get(player.getDisplayName());
 				if((new Date().getTime() - date.getTime()) > 4000)
 				{
-					player.sendMessage(ChatColor.YELLOW + "You think you can escape ?");
+					event.setFrom(startPosition.get(player));
+					event.setTo(startPosition.get(player));
+					player.sendMessage(ChatColor.YELLOW + "You think you can escape ?" + player.isOnline());
 					lastNotif.remove(player.getDisplayName());
 					lastNotif.put(player.getDisplayName(), new Date());
 					player.teleport(startPosition.get(player));
-					return;
 				}
 			}
 			else
 			{
 				lastNotif.put(player.getDisplayName(), new Date());
 				player.teleport(startPosition.get(player));
-				return;
 			}
-			event.setCancelled(true);	
 		}
 		super.onPlayerMove(event);
 	}
@@ -94,6 +93,9 @@ public class LAPlayerListener extends PlayerListener
 	@Override
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) 
 	{
+		if(event.isCancelled())
+			return;
+		
 		String message = event.getMessage();
 		if(message.startsWith("/auth"))
 		{
@@ -168,6 +170,7 @@ public class LAPlayerListener extends PlayerListener
 			{
 				event.setCancelled(true);
 				event.getPlayer().sendMessage(ChatColor.RED + "You only have the permission to use /auth command.");
+				return;
 			}
 		}
 		super.onPlayerCommandPreprocess(event);
@@ -176,10 +179,11 @@ public class LAPlayerListener extends PlayerListener
 	@Override
 	public void onPlayerQuit(PlayerQuitEvent event) 
 	{
-		if(plugin.unloggedPlayers.contains(event.getPlayer()))
+		Player p = event.getPlayer();
+		if(plugin.unloggedPlayers.contains(p))
 		{
-			
-			plugin.unloggedPlayers.remove(event.getPlayer());
+			p.teleport(startPosition.get(p));
+			plugin.unloggedPlayers.remove(p);
 		}
 		super.onPlayerQuit(event);
 	}
