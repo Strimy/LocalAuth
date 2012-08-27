@@ -1,12 +1,13 @@
 package strimy.bukkit.plugins.localauth;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
-public class LABlockListener extends BlockListener 
+public class LABlockListener implements Listener 
 {
 	LocalAuth plugin;
 	
@@ -15,35 +16,32 @@ public class LABlockListener extends BlockListener
 		this.plugin = plugin;
 	}
 
-	@Override
+	@EventHandler
 	public void onBlockDamage(BlockDamageEvent event) {
 		Player player = event.getPlayer();
 		if(plugin.unloggedPlayers.contains(player))
 		{
 			event.setCancelled(true);
 		}
-		super.onBlockDamage(event);
 	}
 
 
-	@Override
+	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
 		Player player = event.getPlayer();
 		if(plugin.unloggedPlayers.contains(player))
 		{
 			event.setCancelled(true);
 		}
-		super.onBlockPlace(event);
 	}
 
-	@Override
+	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
 		Player player = event.getPlayer();
 		if(plugin.unloggedPlayers.contains(player))
 		{
 			event.setCancelled(true);
 		}
-		super.onBlockBreak(event);
 	}
 
 }

@@ -6,15 +6,17 @@ import java.util.HashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-public class LAPlayerListener extends PlayerListener 
+public class LAPlayerListener implements Listener 
 {
 	HashMap<String, Date> lastNotif = new HashMap<String, Date>();
 	HashMap<Player, Location> startPosition = new HashMap<Player, Location>();
@@ -24,14 +26,28 @@ public class LAPlayerListener extends PlayerListener
 		this.plugin = plugin;
 	}
 	
-	@Override
+	@EventHandler(priority=EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event) 
 	{
-		
 		Player player = event.getPlayer();
+		Location resetLocation = null;
+		resetLocation = player.getLocation();
 		String playerName = player.getDisplayName();
 		plugin.unloggedPlayers.add(player);
-		startPosition.put(player, player.getLocation());
+		
+		if(!player.hasPlayedBefore())
+		{
+			plugin.log.info("Reset");
+			resetLocation = player.getWorld().getSpawnLocation();
+		}
+		if(!player.isDead())
+		{
+			plugin.log.info(resetLocation.toString());
+			startPosition.put(player, resetLocation);
+			
+		}
+
+		
 		player.sendMessage(ChatColor.LIGHT_PURPLE + "This server is protected by LocalAuth " + plugin.getDescription().getVersion());
 		if(plugin.playerManager.listPlayers.containsKey(playerName))
 		{
@@ -42,11 +58,9 @@ public class LAPlayerListener extends PlayerListener
 			player.sendMessage(ChatColor.RED + "Your username doesn't exist in the player database. If you already have an account on this server, you can use the command /changename your_old_username your_password");
 			player.sendMessage(ChatColor.RED +"If you don't have an account, ask an OP or post on the forums");
 		}
-		super.onPlayerJoin(event);
-
 	}
 
-	@Override
+	@EventHandler(priority=EventPriority.HIGH)
 	public void onPlayerMove(PlayerMoveEvent event) 
 	{
 		Player player = event.getPlayer();
@@ -72,25 +86,29 @@ public class LAPlayerListener extends PlayerListener
 			else
 			{
 				lastNotif.put(player.getDisplayName(), new Date());
+				Location tpLocation = startPosition.get(player);
+				if(tpLocation.getYaw() == 0.0)
+				{
+					plugin.log.info("TP : "+player.getEyeLocation().toString());
+					tpLocation.setYaw(player.getEyeLocation().getYaw());
+				}
 				player.teleport(startPosition.get(player));
 			}
 		}
-		super.onPlayerMove(event);
 	}
 
-	@Override
+	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		// TODO Auto-generated method stub
-		super.onPlayerDropItem(event);
+		
 	}
 
-	@Override
-	public void onPlayerKick(PlayerKickEvent event) {
-		// TODO Auto-generated method stub
-		super.onPlayerKick(event);
+	@EventHandler
+	public void onPlayerKick(PlayerKickEvent event) 
+	{
+
 	}
 
-	@Override
+	@EventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) 
 	{
 		if(event.isCancelled())
@@ -173,10 +191,9 @@ public class LAPlayerListener extends PlayerListener
 				return;
 			}
 		}
-		super.onPlayerCommandPreprocess(event);
 	}
 
-	@Override
+	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) 
 	{
 		Player p = event.getPlayer();
@@ -185,6 +202,5 @@ public class LAPlayerListener extends PlayerListener
 			p.teleport(startPosition.get(p));
 			plugin.unloggedPlayers.remove(p);
 		}
-		super.onPlayerQuit(event);
 	}
 }

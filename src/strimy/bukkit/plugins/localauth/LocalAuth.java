@@ -5,8 +5,6 @@ import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -43,16 +41,12 @@ public class LocalAuth extends JavaPlugin
 		playerManager = new PlayerManagement(this);
 		
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener , Priority.Normal, this);
 		
-		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Priority.High, this);
-		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_DROP_ITEM, playerListener, Priority.Normal, this);
+		pm.registerEvents(entityListener, this);
 		
-		pm.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Priority.Normal, this);
+		pm.registerEvents(playerListener, this);
+		
+		pm.registerEvents(blockListener, this);
 		
 		getCommand("user").setExecutor(playerManager);
 	}
