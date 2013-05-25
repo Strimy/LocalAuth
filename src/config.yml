@@ -1,0 +1,4 @@
+canKillUnregistered: true
+canUnregisteredFly: false
+canUnregisteredMove: true
+canUnloggedMove: false

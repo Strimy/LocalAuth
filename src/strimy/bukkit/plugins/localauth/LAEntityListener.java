@@ -21,17 +21,27 @@ public class LAEntityListener implements Listener
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) 
 	{
-		// TODO Auto-generated method stub
-		
-
 		boolean unloggedTarget = false;
+		boolean unregisteredTarget = false;
 		if(event.getEntity() instanceof Player)
 		{
 			Player player = (Player)event.getEntity();
-			if(plugin.unloggedPlayers.contains(player))
+			if(plugin.unregisteredPlayers.contains(player))
 			{
-				event.setDamage(0);
+				unregisteredTarget = true;
+				if(!plugin.config.getCanKillUnregistered())
+				{
+					//plugin.Print("Cancelled as unregistered killing disabled");
+					event.setCancelled(true);
+					event.setDamage(0);
+				}
+			}
+			else if(plugin.unloggedPlayers.contains(player))
+			{
+				//plugin.Print("Cancelled because player is unlogged");
 				unloggedTarget = true;
+				event.setCancelled(true);
+				event.setDamage(0);
 			}
 		}
 		
@@ -40,23 +50,47 @@ public class LAEntityListener implements Listener
 			EntityDamageByEntityEvent entityEvent = (EntityDamageByEntityEvent)event;
 			Entity damager = entityEvent.getDamager();
 			
-			if(unloggedTarget)
+			if(damager instanceof Player)
 			{
-				if(damager instanceof Player)
+				plugin.Print("Origin is player");
+				if(unregisteredTarget)
+				{
+					if(!plugin.config.getCanKillUnregistered())
+					{
+						((Player)damager).sendMessage("You can't hurt unregistered player.");
+						return;
+					}
+				}
+				else if(unloggedTarget)
 				{
 					((Player)damager).sendMessage("You can't hurt unlogged player.");
+					return;
 				}
-				return;
-			}
-			
-			if(damager instanceof Player && entityEvent.getEntity() instanceof LivingEntity)
-			{
-				Player player = (Player)damager;
-				if(plugin.unloggedPlayers.contains(player))
+				
+				
+				if(entityEvent.getEntity() instanceof LivingEntity)
 				{
-					event.setDamage(0);
-					((Player)damager).sendMessage(ChatColor.YELLOW + "You are not logged. You can't hurt people !");
+					Player player = (Player)damager;
+					if(plugin.unloggedPlayers.contains(player))
+					{
+						event.setDamage(0);
+						event.setCancelled(true);
+						((Player)damager).sendMessage(ChatColor.YELLOW + "You are not logged. You can't hurt people !");
+					}
 				}
+			}
+			else if(unregisteredTarget || unloggedTarget)
+			{
+				event.setDamage(0);
+				event.setCancelled(true);
+			}
+		}
+		else
+		{
+			if(unregisteredTarget || unloggedTarget)
+			{
+				event.setDamage(0);
+				event.setCancelled(true);
 			}
 		}
 	}

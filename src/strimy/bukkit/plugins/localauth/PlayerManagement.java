@@ -254,7 +254,7 @@ public class PlayerManagement implements CommandExecutor
 		{
 			if(arg3.length == 0)
 			{
-				sender.sendMessage(ChatColor.RED + "Command arguments are : add, del, setpassword");
+				sender.sendMessage(ChatColor.RED + "Command arguments are : add, del, setpassword, reload");
 			}
 			else if(arg3[0].equals("add"))
 			{
@@ -293,8 +293,13 @@ public class PlayerManagement implements CommandExecutor
 			}
 			else if(arg3[0].equals("reload"))
 			{
-				sender.sendMessage(ChatColor.GREEN + "Reloading user list...");
+				sender.sendMessage(ChatColor.GREEN + "Reloading user list and configuration...");
 				LoadXmlDocument();
+				plugin.config.reload();
+			}
+			else
+			{
+				return false;
 			}
 		}
 		else

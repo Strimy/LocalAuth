@@ -10,8 +10,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class LocalAuth extends JavaPlugin 
 {
+	public LAConfig config;
 	Logger log;
 	HashSet<Player> unloggedPlayers;
+	HashSet<Player> unregisteredPlayers;
 	public PlayerManagement playerManager;
 
 	@Override
@@ -23,22 +25,32 @@ public class LocalAuth extends JavaPlugin
 	@Override
 	public void onEnable() 
 	{
+		config = new LAConfig(this);
 		log = getServer().getLogger();
 		Print("["+getDescription().getName()+" "+ getDescription().getVersion()+"] Plugin loaded !");
 		unloggedPlayers = new HashSet<Player>();
+		unregisteredPlayers = new HashSet<Player>();
+		
 		Player[] currentPlayers = getServer().getOnlinePlayers();
-		for(Player player : currentPlayers)
-		{
-			unloggedPlayers.add(player);
-			player.sendMessage(ChatColor.AQUA + "Sorry, the plugin has been reloaded.");
-			player.sendMessage(ChatColor.GOLD + "You must loggin again (/auth password your_password).");
-		}
+
 		
 		LAEntityListener entityListener = new LAEntityListener(this);
 		LAPlayerListener playerListener = new LAPlayerListener(this);
 		LABlockListener blockListener = new LABlockListener(this);
 		
 		playerManager = new PlayerManagement(this);
+		
+		for(Player player : currentPlayers)
+		{
+			if(playerManager.listPlayers.containsKey(player.getDisplayName()))
+			{
+				unloggedPlayers.add(player);
+				player.sendMessage(ChatColor.AQUA + "Sorry, the plugin has been reloaded.");
+				player.sendMessage(ChatColor.GOLD + "You must loggin again (/auth password your_password).");
+			}
+		}
+		
+		saveDefaultConfig();
 		
 		PluginManager pm = getServer().getPluginManager();
 		

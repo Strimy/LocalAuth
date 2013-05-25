@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -48,15 +49,24 @@ public class LAPlayerListener implements Listener
 		}
 
 		
-		player.sendMessage(ChatColor.LIGHT_PURPLE + "This server is protected by LocalAuth " + plugin.getDescription().getVersion());
+		player.sendMessage(ChatColor.LIGHT_PURPLE + "Ce serveur est protégé par LocalAuth " + plugin.getDescription().getVersion());
 		if(plugin.playerManager.listPlayers.containsKey(playerName))
 		{
-			player.sendMessage(ChatColor.YELLOW + "You are not logged in. Type /auth password your_password to login.");
+			player.sendMessage(ChatColor.YELLOW + "Veuillez vous connecter en utilisant la commande /login {mot_de_passe}.");
 		}
 		else
 		{
-			player.sendMessage(ChatColor.RED + "Your username doesn't exist in the player database. If you already have an account on this server, you can use the command /changename your_old_username your_password");
-			player.sendMessage(ChatColor.RED +"If you don't have an account, ask an OP or post on the forums");
+			plugin.unregisteredPlayers.add(player);
+			player.sendMessage(ChatColor.RED + "Vous n'êtes pas inscrit sur le serveur. Pour nous rejoindre, inscrivez vous sur le forum.");
+			player.sendMessage(ChatColor.RED + "Direction http://kikoo.dyndns.org/forum et présentez vous !");
+			if(plugin.config.getCanUnregisteredMove())
+			{
+				player.sendMessage(ChatColor.GREEN + "Nous vous permettons quand même de vous ballader :)");
+			}
+			if(plugin.config.getCanUnregisteredFly())
+			{
+				player.setAllowFlight(true);
+			}
 		}
 	}
 
@@ -64,7 +74,14 @@ public class LAPlayerListener implements Listener
 	public void onPlayerMove(PlayerMoveEvent event) 
 	{
 		Player player = event.getPlayer();
-		if(plugin.unloggedPlayers.contains(player))
+		
+		// If the player is logged or is unregistered with the permission to move
+		if(		!plugin.unloggedPlayers.contains(player) || 
+				plugin.unregisteredPlayers.contains(player) && plugin.config.getCanUnregisteredMove())
+		{
+			
+		}
+		else
 		{
 			if(!startPosition.containsKey(player))
 			{
@@ -77,7 +94,7 @@ public class LAPlayerListener implements Listener
 				{
 					event.setFrom(startPosition.get(player));
 					event.setTo(startPosition.get(player));
-					player.sendMessage(ChatColor.YELLOW + "You think you can escape ?" + player.isOnline());
+					player.sendMessage(ChatColor.YELLOW + "Tu n'es pas connecté...");
 					lastNotif.remove(player.getDisplayName());
 					lastNotif.put(player.getDisplayName(), new Date());
 					player.teleport(startPosition.get(player));
@@ -98,10 +115,50 @@ public class LAPlayerListener implements Listener
 	}
 
 	@EventHandler
-	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		
+	public void onPlayerDropItem(PlayerDropItemEvent event) 
+	{
+		Player player = event.getPlayer();
+		if(plugin.unloggedPlayers.contains(player))
+		{
+			event.setCancelled(true);
+		}
 	}
 
+	@EventHandler
+	public void onPlayerCraft(org.bukkit.event.inventory.CraftItemEvent event) 
+	{
+		Player player = (Player)event.getWhoClicked();
+		if(plugin.unloggedPlayers.contains(player))
+		{
+			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerGetItem(org.bukkit.event.player.PlayerPickupItemEvent event) 
+	{
+		Player player = (Player)event.getPlayer();
+		if(plugin.unloggedPlayers.contains(player))
+		{
+			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerInteract(org.bukkit.event.player.PlayerInteractEvent event) 
+	{
+		plugin.Print("interact");
+		HumanEntity human = event.getPlayer();
+		if(human instanceof Player)
+		{
+			Player player = (Player)human;
+			if(plugin.unloggedPlayers.contains(player))
+			{
+				//event.setCancelled(true);
+			}
+		}
+	}
+	
 	@EventHandler
 	public void onPlayerKick(PlayerKickEvent event) 
 	{
@@ -132,26 +189,26 @@ public class LAPlayerListener implements Listener
 			{
 				if(!plugin.unloggedPlayers.contains(player))
 				{
-					player.sendMessage(ChatColor.LIGHT_PURPLE + "Are you stupid ?");
+					player.sendMessage(ChatColor.LIGHT_PURPLE + "T'es stupide ? T'es déjà connecté...");
 				}
 				else
 				{
 					if(args.length != 2)
 					{
-						player.sendMessage(ChatColor.LIGHT_PURPLE+ "Where is your password ?");
+						player.sendMessage(ChatColor.LIGHT_PURPLE+ "T'as pas oublié le mot de passe ?");
 						return;
 					}
 					String password = args[1];
 					if(plugin.playerManager.CheckPassword(player.getDisplayName(), password))
 					{
-						player.sendMessage(ChatColor.GREEN + "Login success !");
+						player.sendMessage(ChatColor.GREEN + "Have fun !");
 						plugin.unloggedPlayers.remove(player);
 						if(startPosition.containsKey(player))
 							startPosition.remove(player);
 					}
 					else
 					{
-						player.sendMessage(ChatColor.RED + "Bad password");
+						player.sendMessage(ChatColor.RED + "Fail !");
 					}
 				}
 			}
@@ -197,10 +254,23 @@ public class LAPlayerListener implements Listener
 	public void onPlayerQuit(PlayerQuitEvent event) 
 	{
 		Player p = event.getPlayer();
+		Boolean resetPosition = true;
+		if(plugin.unregisteredPlayers.contains(p))
+		{
+			plugin.unregisteredPlayers.remove(p);
+			if(plugin.config.getCanUnregisteredMove())
+			{
+				resetPosition = false;
+			}
+		}
 		if(plugin.unloggedPlayers.contains(p))
 		{
-			p.teleport(startPosition.get(p));
+			if(resetPosition)
+			{
+				p.teleport(startPosition.get(p));
+			}
 			plugin.unloggedPlayers.remove(p);
 		}
+
 	}
 }
